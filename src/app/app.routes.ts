@@ -7,5 +7,11 @@ import { RedComponent } from './components/red/red.component';
 
 export const routes: Route[] = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'reset-password', component: ResetPasswordComponent }, 
   { path: 'login', component: LoginComponent },  
+  { path: 'register', component: RegisterComponent },
+  {path: 'home', component: RedComponent},
+  {path: 'fff', component: RedComponent},
+  
+
 ];
