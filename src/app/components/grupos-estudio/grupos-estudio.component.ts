@@ -1,37 +1,37 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { AngularFireStorage } from '@angular/fire/compat/storage'; // Importar AngularFireStorage
-import firebase from 'firebase/compat/app'; // Importar Firebase
-import { Observable } from 'rxjs';
-import { finalize } from 'rxjs/operators';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { getFirestore, collection, addDoc, updateDoc, doc, arrayUnion, serverTimestamp, onSnapshot } from 'firebase/firestore';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { BehaviorSubject } from 'rxjs';
+import { initializeApp } from 'firebase/app';
+import { environment } from '../../environments/environments';  // Configuración de Firebase
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-grupos-estudio',
   templateUrl: './grupos-estudio.component.html',
   styleUrls: ['./grupos-estudio.component.css'],
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule]
+  imports: [CommonModule, ReactiveFormsModule]
 })
 export class GruposEstudioComponent implements OnInit {
-  createGroupForm!: FormGroup; // Usar el operador de no null assertion (!)
+  createGroupForm!: FormGroup;
   postForm!: FormGroup;
-  groups: Observable<any[]> | null = null;
+  groups$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]);
   selectedGroup: any | null = null;
   isModalOpen: boolean = false;
-  uploadProgress: Observable<number | undefined> | null = null; // Para mostrar progreso de carga del archivo
   uploadedFileUrl: string | null = null;
+  uploadProgress: BehaviorSubject<number | null> = new BehaviorSubject<number | null>(null);
+  
+  private app = initializeApp(environment.firebaseConfig); // Inicializar Firebase
+  private db = getFirestore(this.app); // Firestore
+  private storage = getStorage(this.app); // Firebase Storage
 
-  constructor(
-    private fb: FormBuilder,
-    private firestore: AngularFirestore,
-    private storage: AngularFireStorage // Inyectar AngularFireStorage para manejar archivos
-  ) {}
+  constructor(private fb: FormBuilder, private router: Router) {}
 
   ngOnInit(): void {
-    // Inicializar formularios
+    // Inicialización de formularios
     this.createGroupForm = this.fb.group({
       groupName: ['', Validators.required],
       description: ['', Validators.required]
@@ -42,11 +42,15 @@ export class GruposEstudioComponent implements OnInit {
       file: ['']
     });
 
-    // Obtener los grupos de Firebase
-    this.groups = this.firestore.collection('grupos').valueChanges({ idField: 'id' });
+    // Obtener grupos desde Firestore usando onSnapshot
+    const groupsRef = collection(this.db, 'grupos');
+    onSnapshot(groupsRef, (querySnapshot) => {
+      const groups = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      this.groups$.next(groups);  // Emitir datos a través del BehaviorSubject
+    });
   }
 
-  // Abrir el modal
+  // Abrir el modal para crear un grupo
   openModal() {
     this.isModalOpen = true;
   }
@@ -59,10 +63,10 @@ export class GruposEstudioComponent implements OnInit {
 
   // Crear un nuevo grupo
   onSubmit() {
-    if (this.createGroupForm?.valid) {
+    if (this.createGroupForm.valid) {
       const newGroup = this.createGroupForm.value;
-      // Guardar el nuevo grupo en Firebase
-      this.firestore.collection('grupos').add(newGroup)
+      const groupsRef = collection(this.db, 'grupos');
+      addDoc(groupsRef, newGroup)
         .then(() => {
           console.log('Grupo creado:', newGroup);
           this.closeModal();
@@ -73,24 +77,24 @@ export class GruposEstudioComponent implements OnInit {
     }
   }
 
-  // Seleccionar un grupo
-  viewGroup(group: any) {
+  // Seleccionar un grupo para ver su feed
+  selectGroup(group: any) {
     this.selectedGroup = group;
+    this.router.navigate(['/grupo', group.id]);  // Navegar a la página de detalles del grupo
   }
 
-  // Agregar una publicación al grupo seleccionado
+  // Agregar una publicación al feed de un grupo
   addPost() {
-    if (this.postForm?.valid && this.selectedGroup) {
+    if (this.postForm.valid && this.selectedGroup) {
       const newPost = {
         content: this.postForm.value.content,
-        fileUrl: this.uploadedFileUrl || null, // Asignar la URL del archivo si se subió
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        fileUrl: this.uploadedFileUrl || null,
+        timestamp: serverTimestamp()
       };
 
-      const groupRef = this.firestore.collection('grupos').doc(this.selectedGroup.id);
-
-      groupRef.update({
-        feed: firebase.firestore.FieldValue.arrayUnion(newPost)
+      const groupRef = doc(this.db, 'grupos', this.selectedGroup.id);
+      updateDoc(groupRef, {
+        feed: arrayUnion(newPost)  // Agregar el nuevo post al array de publicaciones
       }).then(() => {
         console.log('Post agregado:', newPost);
         this.postForm.reset();
@@ -106,21 +110,26 @@ export class GruposEstudioComponent implements OnInit {
     const file = event.target.files[0];
     if (file) {
       const filePath = `uploads/${Date.now()}_${file.name}`;
-      const fileRef = this.storage.ref(filePath);
-      const uploadTask = this.storage.upload(filePath, file);
+      const fileRef = ref(this.storage, filePath);
+      const uploadTask = uploadBytesResumable(fileRef, file);
 
-      // Monitorear progreso de la subida
-      this.uploadProgress = uploadTask.percentageChanges();
-
-      // Obtener URL del archivo subido
-      uploadTask.snapshotChanges().pipe(
-        finalize(() => {
-          fileRef.getDownloadURL().subscribe((url) => {
+      // Monitorear el progreso de la carga
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          this.uploadProgress.next(progress);  // Emitir progreso usando BehaviorSubject
+        },
+        (error) => {
+          console.error('Error de carga:', error);
+        },
+        () => {
+          // Cuando la carga termine
+          getDownloadURL(uploadTask.snapshot.ref).then((url) => {
             this.uploadedFileUrl = url;
             console.log('Archivo subido con URL:', url);
           });
-        })
-      ).subscribe();
+        }
+      );
     }
   }
 }

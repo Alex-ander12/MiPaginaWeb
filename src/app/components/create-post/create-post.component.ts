@@ -9,7 +9,7 @@ import { RouterLink, RouterLinkActive, RouterLinkWithHref } from '@angular/route
   templateUrl: './create-post.component.html',
   styleUrls: ['./create-post.component.css'],
   standalone: true,
-  imports: [CommonModule,FormsModule,RouterLink, RouterLinkWithHref, RouterLinkActive],
+  imports: [CommonModule,FormsModule],
 })
 export class CreatePostComponent {
   selectedFile: File | null = null;

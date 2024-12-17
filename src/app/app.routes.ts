@@ -10,6 +10,7 @@ import { EventosAcademicosComponent } from './components/eventos-academicos/even
 import { GruposEstudioComponent } from './components/grupos-estudio/grupos-estudio.component';
 import { MensajeriaComponent } from './components/mensajeria/mensajeria.component';
 import { ProfileViewComponent } from './components/profile-view/profile-view.component';
+import { ContenidoComponent } from './components/contenido/contenido.component';
 
 export const routes: Route[] = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -22,6 +23,9 @@ export const routes: Route[] = [
   {path: 'grupos-estudio', component: GruposEstudioComponent},
   {path: 'profileView', component: ProfileViewComponent},
   {path: 'create-post', component: CreatePostComponent},
-  
+  { path: 'grupo/:id', component: ContenidoComponent },  // Ruta para el contenido del grupo
+  { path: '**', redirectTo: '/' }  // Redirigir cualquier ruta no encontrada al inicio
+
+
 
 ];

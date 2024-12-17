@@ -1,31 +1,28 @@
-import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { CommonModule } from '@angular/common';
+import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
 import { provideRouter } from '@angular/router';
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { provideAuth, getAuth } from '@angular/fire/auth';
-import { provideFirestore, getFirestore } from '@angular/fire/firestore'; // Importa el módulo de Firestore
+import { provideFirestore, getFirestore } from '@angular/fire/firestore';
 import { environment } from './app/environments/environments';
 import { routes } from './app/app.routes';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { AuthInterceptor } from './app/interceptors/auth.interceptor';
 import { provideHttpClient } from '@angular/common/http';
-import { bootstrapApplication } from '@angular/platform-browser';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './app/interceptors/auth.interceptor';
+import { CommonModule } from '@angular/common';
 
-// Configuración de Firebase y Firestore en la aplicación
 bootstrapApplication(AppComponent, {
   providers: [
-    provideRouter(routes),
-    provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
-    provideAuth(() => getAuth()),
-    provideFirestore(() => getFirestore()),  // Provee Firestore correctamente
-    provideHttpClient(),
+    provideRouter(routes), // Configuración del enrutamiento
+    provideFirebaseApp(() => initializeApp(environment.firebaseConfig)), // Inicializar Firebase
+    provideAuth(() => getAuth()), // Proveer autenticación de Firebase
+    provideFirestore(() => getFirestore()), // Proveer Firestore de Firebase
+    provideHttpClient(), // Proveer cliente HTTP
     {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AuthInterceptor,
-      multi: true,
+      provide: HTTP_INTERCEPTORS, 
+      useClass: AuthInterceptor, // Interceptor para manejar la autenticación
+      multi: true, // Permitir múltiples interceptores
     },
-    CommonModule,
-  ],
-}).catch((err) => console.error(err));
+    CommonModule // Importar CommonModule para directivas comunes como ngIf, ngFor, etc.
+  ]
+}).catch((err) => console.error('Error al inicializar la aplicación:', err));

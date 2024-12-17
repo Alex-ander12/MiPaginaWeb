@@ -1,0 +1,71 @@
+<div *ngIf="group">
+    <!-- Información del grupo -->
+    <h2>Grupo: {{ group.name }}</h2>
+    <p>{{ group.description }}</p>
+  
+    <!-- Formulario para crear una publicación -->
+    <div class="create-post-form">
+      <h3>Crear nueva publicación</h3>
+      
+      <!-- Campo para ingresar el nombre de la publicación -->
+      <label for="postName">Nombre de la publicación:</label>
+      <input 
+        type="text" 
+        id="postName" 
+        [(ngModel)]="postName" 
+        placeholder="Escribe el nombre de la publicación" 
+        required 
+      />
+  
+      <!-- Campo para seleccionar un archivo de imagen -->
+      <label for="fileInput">Seleccionar imagen:</label>
+      <input 
+        type="file" 
+        id="fileInput" 
+        (change)="onFileSelected($event)" 
+        accept="image/*" 
+        required 
+      />
+  
+      <!-- Botón para subir la publicación -->
+      <button 
+        (click)="uploadFile()" 
+        [disabled]="!postName || !selectedFile"
+        class="upload-btn"
+      >
+        Subir publicación
+      </button>
+    </div>
+  
+    <!-- Mensajes de confirmación o error -->
+    <div *ngIf="uploadSuccess" class="success-message">
+      <p>¡Publicación creada exitosamente!</p>
+    </div>
+    <div *ngIf="uploadError" class="error-message">
+      <p>Error al crear la publicación. Por favor, intenta nuevamente.</p>
+    </div>
+  
+    <!-- Vista previa de la publicación -->
+    <div *ngIf="imageBase64" class="preview">
+      <h4>Vista previa de la publicación:</h4>
+      <p><strong>Nombre:</strong> {{ postName }}</p>
+      <img [src]="imageBase64" alt="Vista previa de la imagen" class="preview-image" />
+    </div>
+  
+    <!-- Mostrar las publicaciones del grupo -->
+    <div *ngIf="posts && posts.length > 0">
+      <h3>Publicaciones del grupo</h3>
+      <div class="posts-list">
+        <div *ngFor="let post of posts" class="post-item">
+          <p><strong>{{ post.name }}</strong></p>
+          <img [src]="post.imageBase64" alt="Imagen de la publicación" class="post-image" />
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Si no hay publicaciones, mostrar un mensaje -->
+  <div *ngIf="!posts || posts.length === 0">
+    <p>No hay publicaciones en este grupo aún.</p>
+  </div>
+  
