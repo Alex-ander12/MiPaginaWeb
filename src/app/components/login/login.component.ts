@@ -25,7 +25,7 @@ export class LoginComponent {
           console.log('Token guardado:', token);
           
           // Navegar a la página de inicio
-          this.router.navigate(['/home']);
+          this.router.navigate(['/profileView']);
         });
       })
       .catch((error) => {
@@ -44,7 +44,7 @@ export class LoginComponent {
           localStorage.setItem('authToken', token);
           console.log('Token guardado:', token);
   
-          this.router.navigate(['/home']);
+          this.router.navigate(['/profileView']);
         });
       })
       .catch((error) => {
@@ -62,7 +62,7 @@ export class LoginComponent {
           localStorage.setItem('authToken', token);
           console.log('Token guardado:', token);
   
-          this.router.navigate(['/home']);
+          this.router.navigate(['/profileView']);
         });
       })
       .catch((error) => {

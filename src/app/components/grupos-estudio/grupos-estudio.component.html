@@ -1,0 +1,65 @@
+<div class="grupos-container">
+  <!-- Botón para abrir el modal de creación de grupo -->
+  <button (click)="openModal()">Crear Grupo</button>
+
+  <!-- Modal para crear grupos -->
+  <div class="modal-overlay" [class.active]="isModalOpen">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Crear Grupo</h2>
+        <button class="modal-close" (click)="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form *ngIf="createGroupForm" [formGroup]="createGroupForm" (ngSubmit)="onSubmit()">
+          <div>
+            <label for="groupName">Nombre del grupo:</label>
+            <input id="groupName" formControlName="groupName" type="text" placeholder="Ingresa el nombre del grupo" />
+          </div>
+          <div>
+            <label for="description">Descripción:</label>
+            <textarea id="description" formControlName="description" rows="4" placeholder="Describe el propósito del grupo"></textarea>
+          </div>
+          <div class="modal-footer">
+            <button (click)="closeModal()">Cancelar</button>
+            <button [disabled]="!createGroupForm.valid" type="submit">Crear</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de Grupos -->
+  <div class="groups-list">
+    <h2>Grupos Existentes</h2>
+    <ul>
+      <li *ngFor="let group of groups | async" (click)="viewGroup(group)">
+        <h3>{{ group.name }}</h3>
+        <p>{{ group.description }}</p>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Feed del Grupo Seleccionado -->
+  <div *ngIf="selectedGroup" class="group-feed">
+    <h2>Feed de {{ selectedGroup.name }}</h2>
+    <div class="feed-post">
+      <form *ngIf="postForm" [formGroup]="postForm" (ngSubmit)="addPost()">
+        <div>
+          <label for="postContent">Publicar:</label>
+          <textarea id="postContent" formControlName="content" rows="3" placeholder="Escribe algo para compartir..."></textarea>
+        </div>
+        <div>
+          <label for="postFile">Archivo:</label>
+          <input id="postFile" type="file" (change)="onFileUpload($event)" />
+        </div>
+        <button [disabled]="!postForm.valid">Publicar</button>
+      </form>
+    </div>
+    <div class="feed">
+      <div *ngFor="let post of selectedGroup.feed" class="feed-item">
+        <p>{{ post.content }}</p>
+        <a *ngIf="post.fileUrl" [href]="post.fileUrl" target="_blank">Descargar archivo</a>
+      </div>
+    </div>
+  </div>
+</div>
