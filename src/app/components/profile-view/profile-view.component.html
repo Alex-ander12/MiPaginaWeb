@@ -2,33 +2,58 @@
   <div class="form-group">
     <label for="name">Nombre</label>
     <input id="name" formControlName="name" class="form-control" type="text" />
+    <div *ngIf="profileForm.get('name')?.invalid && profileForm.get('name')?.touched" class="text-danger">
+      El nombre es obligatorio y debe tener al menos 2 caracteres.
+    </div>
   </div>
 
   <div class="form-group">
     <label for="career">Carrera</label>
-    <input id="career" formControlName="career" class="form-control" type="text" />
+    <select id="career" formControlName="career" class="form-control">
+      <option value="">Seleccione una carrera</option>
+      <option value="Ciencias de la Educación">Ciencias de la Educación</option>
+      <option value="Ciencias Económicas y Empresariales">Ciencias Económicas y Empresariales</option>
+      <option value="Ciencias Naturales">Ciencias Naturales</option>
+      <option value="Computación e Informática">Computación e Informática</option>
+      <option value="Ingeniería y Tecnología">Ingeniería y Tecnología</option>
+      <option value="Ingeniería de Sistemas">Ingeniería de Sistemas</option>
+      <option value="Ingeniería Agroindustrial">Ingeniería Agroindustrial</option>
+      <option value="Ingeniería Ambiental">Ingeniería Ambiental</option>
+      <option value="Ingeniería Civil">Ingeniería Civil</option>
+      <option value="Educación Primaria Intercultural">Educación Primaria Intercultural</option>
+    </select>
+    <div *ngIf="profileForm.get('career')?.invalid && profileForm.get('career')?.touched" class="text-danger">
+      Seleccione una carrera.
+    </div>
   </div>
 
   <div class="form-group">
     <label for="academicYear">Año Académico</label>
     <select id="academicYear" formControlName="academicYear" class="form-control">
-      <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+      <option value="">Seleccione un año académico</option>
+      <ng-container *ngFor="let year of years">
+        <option [value]="year + '-I'">{{ year }}-I</option>
+        <option [value]="year + '-II'">{{ year }}-II</option>
+      </ng-container>
     </select>
+    <div *ngIf="profileForm.get('academicYear')?.invalid && profileForm.get('academicYear')?.touched" class="text-danger">
+      Seleccione un año académico.
+    </div>
   </div>
 
   <div class="form-group">
     <label for="profilePicture">Foto de Perfil</label>
     <input id="profilePicture" type="file" (change)="onFileSelected($event)" class="form-control" />
-    <img *ngIf="selectedImage" [src]="selectedImage" alt="Imagen de perfil" class="preview-img" />
+    <img *ngIf="selectedImage" [src]="selectedImage" alt="Imagen de perfil" class="preview-img mt-2" width="150" />
   </div>
 
   <div class="form-group">
     <label for="privacy">Privacidad</label>
-    <button type="button" class="btn" (click)="togglePrivacy()">
+    <button type="button" class="btn btn-secondary" (click)="togglePrivacy()">
       {{ isPublic ? 'Público' : 'Privado' }}
     </button>
   </div>
 
   <button type="submit" [disabled]="profileForm.invalid" class="btn btn-primary">Guardar</button>
-  <button type="button" (click)="resetForm()" class="btn btn-secondary">Resetear</button>
+  <button type="button" (click)="resetForm()" class="btn btn-secondary ml-2">Resetear</button>
 </form>

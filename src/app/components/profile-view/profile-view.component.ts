@@ -17,18 +17,19 @@ export class ProfileViewComponent implements OnInit {
   isPublic: boolean = true;
   selectedImage: string | ArrayBuffer | null = null;
   years: number[] = [];
-  userId: string = '';  // Aquí almacenas el ID del usuario
+  userId: string = '';  // ID del usuario actual
+  maxFileSizeMB = 2;   // Tamaño máximo del archivo en MB
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private firestore: Firestore,  // Inyección de Firestore
+    private firestore: Firestore,
     private auth: Auth
   ) {}
 
   ngOnInit() {
     const currentYear = new Date().getFullYear();
-    this.years = Array.from({ length: currentYear - 2000 + 1 }, (_, i) => 2000 + i);
+    this.years = Array.from({ length: 2024 - 2004 + 1 }, (_, i) => 2004 + i);
 
     this.profileForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
@@ -38,15 +39,13 @@ export class ProfileViewComponent implements OnInit {
       privacy: ['public'],
     });
 
-    // Obtener el usuario actual
     const user = this.auth.currentUser;
     if (user) {
       this.userId = user.uid;
-      this.loadProfile(user.uid);  // Cargar el perfil si ya existe
+      this.loadProfile(user.uid);
     }
   }
 
-  // Cargar el perfil si ya existe en Firestore
   async loadProfile(userId: string) {
     try {
       const profileRef = doc(this.firestore, 'profiles', userId);
@@ -68,57 +67,43 @@ export class ProfileViewComponent implements OnInit {
     }
   }
 
-  // Guardar el perfil en Firestore
   async saveProfile() {
     if (this.profileForm.valid) {
       const profileData = this.profileForm.value;
 
       try {
         await this.updateProfileInFirestore(this.userId, profileData);
-        console.log('Perfil guardado:', profileData);
+        alert('Perfil guardado exitosamente');
         this.router.navigate(['/home']);
       } catch (error) {
         console.error('Error al guardar el perfil:', error);
+        alert('Error al guardar el perfil. Por favor, inténtalo de nuevo.');
       }
     } else {
       console.error('Formulario inválido');
     }
   }
 
-  // Actualizar el perfil en Firestore
   async updateProfileInFirestore(userId: string, profileData: any) {
     try {
       const profileRef = doc(this.firestore, 'profiles', userId);
       const profileSnap = await getDoc(profileRef);
 
-      const updatedData: any = {};
+      const updatedData: any = {
+        name: profileData['name'],
+        career: profileData['career'],
+        academicYear: profileData['academicYear'],
+        privacy: profileData['privacy'],
+      };
 
-      // Si la imagen fue modificada, la guardamos
       if (this.selectedImage && this.selectedImage !== profileSnap.data()?.['profilePicture']) {
         updatedData['profilePicture'] = this.selectedImage;
       }
 
-      // Solo actualizamos los campos que hayan cambiado
-      updatedData['name'] = profileData['name'];
-      updatedData['career'] = profileData['career'];
-      updatedData['academicYear'] = profileData['academicYear'];
-      updatedData['privacy'] = profileData['privacy'];
-
       if (profileSnap.exists()) {
-        // Actualizar el perfil en Firestore
         await updateDoc(profileRef, updatedData);
-        console.log('Perfil actualizado en Firestore');
       } else {
-        // Si no existe el perfil, lo creamos
-        await setDoc(profileRef, {
-          userId,
-          name: profileData['name'],
-          career: profileData['career'],
-          academicYear: profileData['academicYear'],
-          profilePicture: this.selectedImage,
-          privacy: profileData['privacy'],
-        });
-        console.log('Perfil creado en Firestore');
+        await setDoc(profileRef, { userId, ...updatedData });
       }
     } catch (error) {
       console.error('Error actualizando el perfil:', error);
@@ -133,24 +118,37 @@ export class ProfileViewComponent implements OnInit {
   onFileSelected(event: Event) {
     const file = (event.target as HTMLInputElement)?.files?.[0];
     if (file) {
+      // Validar que el archivo es una imagen y no excede el tamaño permitido
+      if (!file.type.startsWith('image/')) {
+        alert('Por favor, selecciona un archivo de imagen válido.');
+        return;
+      }
+
+      if (file.size > this.maxFileSizeMB * 1024 * 1024) {
+        alert(`El archivo no debe exceder ${this.maxFileSizeMB} MB.`);
+        return;
+      }
+
       this.profileForm.patchValue({ profilePicture: file });
       this.profileForm.get('profilePicture')?.updateValueAndValidity();
 
       const reader = new FileReader();
-      reader.onload = () => this.selectedImage = reader.result;
+      reader.onload = () => (this.selectedImage = reader.result);
       reader.readAsDataURL(file);
     }
   }
 
   resetForm() {
-    this.profileForm.reset({
-      name: '',
-      career: '',
-      academicYear: '',
-      profilePicture: null,
-      privacy: 'public',
-    });
-    this.selectedImage = null;
-    this.isPublic = true;
+    if (confirm('¿Estás seguro de que deseas resetear el formulario?')) {
+      this.profileForm.reset({
+        name: '',
+        career: '',
+        academicYear: '',
+        profilePicture: null,
+        privacy: 'public',
+      });
+      this.selectedImage = null;
+      this.isPublic = true;
+    }
   }
 }
