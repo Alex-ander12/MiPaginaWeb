@@ -1,28 +1,224 @@
-/* Estilos del modal */
-.modal {
+/* Estilos generales */
+body {
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: #121212;
+  color: #ffffff;
+}
+
+.grupos-container {
+  padding: 20px;
+}
+
+/* Botón principal */
+button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 20px;
+  background-color: #1db954;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+  background-color: #1ed760;
+  transform: scale(1.05);
+}
+
+button:disabled {
+  background-color: #444444;
+  cursor: not-allowed;
+}
+
+/* Modal */
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1000;
 }
 
 .modal-content {
-  background-color: white;
+  background-color: #1e1e1e;
+  border-radius: 10px;
   padding: 20px;
-  border-radius: 4px;
-  width: 300px;
-  text-align: center;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.5);
 }
 
-.close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #1ed760;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1.5rem;
   cursor: pointer;
-  font-size: 20px;
+  transition: color 0.3s ease;
+}
+
+.modal-close:hover {
+  color: #ff4d4d;
+}
+
+.modal-body form div {
+  margin-bottom: 1rem;
+}
+
+.modal-body label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #b3b3b3;
+}
+
+.modal-body input,
+.modal-body textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #333;
+  border-radius: 5px;
+  background-color: #1e1e1e;
+  color: #ffffff;
+}
+
+.modal-body input:focus,
+.modal-body textarea:focus {
+  border-color: #1ed760;
+  outline: none;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Lista de Grupos */
+.grupos-container p {
+  margin: 0.5rem 0;
+}
+
+.grupos-container a {
+  color: #1ed760;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.grupos-container a:hover {
+  color: #1db954;
+}
+
+/* Feed del Grupo Seleccionado */
+.group-feed {
+  margin-top: 20px;
+}
+
+.group-feed h2 {
+  font-size: 1.5rem;
+  color: #1ed760;
+  margin-bottom: 1rem;
+}
+
+.feed-post form {
+  background-color: #1e1e1e;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.feed-post form div {
+  margin-bottom: 1rem;
+}
+
+.feed-post label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #b3b3b3;
+}
+
+.feed-post textarea,
+.feed-post input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #333;
+  border-radius: 5px;
+  background-color: #1e1e1e;
+  color: #ffffff;
+}
+
+.feed-post textarea:focus,
+.feed-post input:focus {
+  border-color: #1ed760;
+  outline: none;
+}
+
+.feed {
+  background-color: #121212;
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+.feed-item {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: #1e1e1e;
+  border-radius: 10px;
+}
+
+.feed-item p {
+  margin: 0 0 0.5rem;
+}
+
+.feed-item a {
+  color: #1ed760;
+  text-decoration: none;
+}
+
+.feed-item a:hover {
+  text-decoration: underline;
+}
+
+/* Progreso de carga */
+p {
+  margin: 0.5rem 0;
+}
+
+p[role="progress"] {
+  font-size: 0.875rem;
+  color: #b3b3b3;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+  }
+
+  .group-feed h2 {
+    font-size: 1.25rem;
+  }
+
+  button {
+    font-size: 0.875rem;
+  }
 }
